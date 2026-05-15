@@ -21,6 +21,7 @@ nodes:
       IMAGE_HEIGHT: 600
       IMAGE_WIDTH: 960
       JPEG_QUALITY: 90
+      PATTERN: ball
     inputs:
       tick: dora/timer/millis/33 # 30fps
     outputs:
