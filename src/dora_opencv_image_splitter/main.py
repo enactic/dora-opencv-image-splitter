@@ -21,13 +21,13 @@ Inputs:
            Metadata must carry "encoding", "width", "height".
 
 Env vars / CLI args:
-  SPLIT_MODE         / --split-mode    : "bbox" | "horizontal" | "vertical"  (default: "vertical")
-  NUM_SPLITS         / --num-splits    : equal splits for horizontal/vertical mode (default: 2)
-  JPEG_QUALITY       / --jpeg-quality  : JPEG quality for output encoding (default: 90)
-  IMAGE_WIDTH        / --image-width   : fallback image width  (default: 640)
-  IMAGE_HEIGHT       / --image-height  : fallback image height (default: 480)
-  IMAGE_NUM_CHANNELS / --image-num-channels: fallback channel count (default: 3)
-  BBOXES             / --bboxes        : flat list x1 y1 x2 y2 ... for bbox mode
+  SPLIT_MODE     / --split-mode    : "bbox" | "horizontal" | "vertical"  (default: "vertical")
+  NUM_SPLITS     / --num-splits    : equal splits for horizontal/vertical mode (default: 2)
+  JPEG_QUALITY   / --jpeg-quality  : JPEG quality for output encoding (default: 90)
+  IMAGE_WIDTH    / --image-width   : fallback image width  (default: 640)
+  IMAGE_HEIGHT   / --image-height  : fallback image height (default: 480)
+  IMAGE_ENCODING / --image-encoding: fallback encoding
+  BBOXES         / --bboxes        : flat list x1 y1 x2 y2 ... for bbox mode
 
 Outputs (dynamic, named by index):
   image_0, image_1, ..., image_N-1
@@ -125,10 +125,9 @@ def main():
         type=int,
     )
     parser.add_argument(
-        "--image-num-channels",
-        default=int(os.getenv("IMAGE_NUM_CHANNELS", 3)),
-        help="Fallback number of image channels when metadata is absent (default: 3)",
-        type=int,
+        "--image-encoding",
+        help="Fallback image encoding when metadata is absent",
+        type=str,
     )
     parser.add_argument(
         "--bboxes",
@@ -155,11 +154,26 @@ def main():
         metadata: dict = event["metadata"]
         width = metadata.get("width", args.image_width)
         height = metadata.get("height", args.image_height)
-        num_channels = metadata.get("num_channels", args.image_num_channels)
+        encoding = metadata.get("encoding", args.image_encoding)
 
-        frame = np.array(event["value"], dtype=np.uint8).reshape(
-            (height, width, num_channels)
-        )
+        if encoding == "bgr8":
+            num_channels = 3
+            frame = np.array(event["value"], dtype=np.uint8).reshape(
+                (height, width, num_channels)
+            )
+        elif encoding == "rgb8":
+            num_channels = 3
+            frame = np.array(event["value"], dtype=np.uint8).reshape(
+                (height, width, num_channels)
+            )
+            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        elif encoding in ["jpeg", "jpg", "jpe", "bmp", "webp", "png"]:
+            frame = cv2.imdecode(
+                np.array(event["value"], dtype=np.uint8), cv2.IMREAD_COLOR
+            )
+        else:
+            print(f"Unsupported image encoding: {encoding}")
+            continue
 
         if args.split_mode == "bbox" and bboxes is not None:
             crops = _split_by_bboxes(frame, bboxes)
