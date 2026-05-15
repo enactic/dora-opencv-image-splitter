@@ -14,7 +14,7 @@
 
 nodes:
   - id: camera
-    build: pip install -e nodes/dora-openarm-dummy-camera
+    build: pip install dora-openarm-dummy-camera
     path: dora-openarm-dummy-camera
     env:
       ENCODING: "jpeg"
