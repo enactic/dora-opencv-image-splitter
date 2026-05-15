@@ -126,6 +126,7 @@ def main():
     )
     parser.add_argument(
         "--image-encoding",
+        default=os.getenv("IMAGE_ENCODING"),
         help="Fallback image encoding when metadata is absent",
         type=str,
     )
