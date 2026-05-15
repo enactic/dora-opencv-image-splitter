@@ -13,5 +13,7 @@
 # limitations under the License.
 
 *.egg-info
-__pycache__/
 /build/
+/example/out/
+/uv.lock
+__pycache__/
