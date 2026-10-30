@@ -14,7 +14,7 @@
 
 [project]
 name = "dora-opencv-image-splitter"
-version = "0.1.0"
+version = "0.1.1"
 authors = [{ name = "Enactic, Inc." }]
 description = "dora-rs node to split one image into multiple images"
 license = { text = "Apache-2.0" }
